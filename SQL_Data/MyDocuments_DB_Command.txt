@@ -1,0 +1,45 @@
+USE [MyDocuments]
+GO
+
+/****** Data Base Name is MyDocuments ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Users](
+	[Id] [int] NULL,
+	[Email] [varchar](100) NULL,
+	[FirstName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](50) NULL,
+	[CreatedDate] [datetime] NULL,
+	[UpdatedDate] [datetime] NULL
+) ON [PRIMARY]
+GO
+
+
+CREATE TABLE [dbo].[Transactions](
+	[Id] [int] NULL,
+	[TransactionId] [varchar](max) NULL,
+	[UserId] [int] NULL,
+	[Email] [varchar](100) NULL,
+	[Status] [int] NULL,
+	[CreatedDate] [datetime] NULL,
+	[UpdatedDate] [datetime] NULL,
+	[FileCount] [int] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[Files](
+	[Id] [int] NULL,
+	[UserId] [int] NULL,
+	[Email] [varchar](100) NULL,
+	[TransactionReference] [varchar](100) NULL,
+	[FileTitle] [varchar](max) NULL,
+	[FilePath] [varchar](max) NULL,
+	[FileType] [varchar](50) NULL,
+	[Status] [int] NULL,
+	[CreatedDate] [datetime] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO

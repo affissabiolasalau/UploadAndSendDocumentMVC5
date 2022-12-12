@@ -1,0 +1,293 @@
+﻿@model MyDocuments.Models.UsersModel
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="row">
+        <div class="col-12">
+            <h3 class="page-title">@ViewData["Greetings"]!</h3>
+        </div>
+    </div>
+</div>
+<!-- /Page Header -->
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Add New User</h4>
+    </div>
+    <div class="card-body">
+        <form id="userForm" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><i class="fa fa-user"></i></span>
+                            </div>
+                            <input asp-for="FirstName" class="form-control" placeholder="First Name">
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span asp-for="LastName" class="input-group-text" id="basic-addon1"><i class="fa fa-user"></i></span>
+                            </div>
+                            <input asp-for="LastName" class="form-control" placeholder="Last Name">
+                        </div>
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span asp-for="Email" class="input-group-text" id="basic-addon1"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            <input asp-for="Email" placeholder="Email Address" class="form-control">
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <button id="nextBtn" type="submit" class="btn-block btn btn-primary"> Next <i class="fa fa-arrow-right"></i> </button>
+                    </div>
+                </div>
+
+
+                <div id="errorMessage" class="col-md-12">
+                    <div class="alert alert-danger" id="errMsg"> </div>
+                </div>
+
+
+            </div>
+        </form>
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data" asp-controller="Upload" asp-action="Index">
+        @*<form id="uploadForm" method="post" enctype="multipart/form-data">*@
+            <input type="hidden" id="UserEmail" name="UserEmail" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <input type="file" class="form-control" id="uploadFiles" name="uploadFiles" accept="image/*,.pdf,.csv,.docx,.doc" multiple />
+                        @*<span style="color:green">@Html.Raw(ViewBag.Message)</span>*@
+                        </div>
+                    </div>
+                    @*<progress id="fileProgress" style="display: none"></progress>*@
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <button type="submit" class="btn-block btn btn-primary" id="uploadBtn"> Upload <i class="fa fa-file-upload"></i> </button>
+                            </div>
+                        </div>
+                    </div>
+        </form>
+        @*<div id="errorMessage2" class="col-md-12">
+            <div class="alert alert-danger" id="errMsg2"> </div>
+        </div>*@
+
+    </div>
+</div>
+
+
+@section Scripts {
+
+
+    <script>
+
+        $(function () {
+
+        $("#errorMessage").hide()
+            $("#uploadForm").hide()
+        //$("#nextBtn").click(function () {
+            $('#userForm').on('submit', function (e) {
+                e.preventDefault();
+            $('#nextBtn').prop('disabled', true)
+            $("#nextBtn").html("Please wait...");
+
+            //var user = $("#userForm")
+
+                var user = {
+                    "Email": $("#Email").val(),
+                    "FirstName": $("#FirstName").val(),
+                    "LastName": $("#LastName").val()
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Index", "Home")',
+                    //data: user.serialize(),
+                    //data: user.serialize(),
+                    data: JSON.stringify(user),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                async: true,
+                processData: false,
+                cache: false,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                    success: function (result) {
+                        if (result.response.status === 0) {
+                        $("#errMsg").html(result.response.message)
+                        $("#errorMessage").show()
+                       // showErrorMessage();
+                        $('#nextBtn').prop('disabled', false)
+                        $("#nextBtn").html("Next");
+                    }
+                    else
+                    {
+                        var userEmail = $("#Email").val()
+
+                        $("#userEmail").val(userEmail)
+                        $("#userForm").hide()
+                        $("#errorMessage").hide()
+                            //$("#uploadForm").show()
+                            location.href = "/Upload";
+                        $('#nextBtn').prop('disabled', false)
+                    }
+                },
+                error: function () {
+                    alert(error)
+                    $("#errMsg").html("Registration failed. Please try again")
+                    $("#errorMessage").show()
+                   // showErrorMessage();
+                    $('#nextBtn').prop('disabled', false)
+                    $("#nextBtn").html("Next");
+                }
+            });
+               
+            return false;
+
+        });
+    });
+    </script>
+
+
+    @*<script>
+
+        $(function () {
+
+           // var formdata = new FormData(); //FormData object
+            var formData = new FormData();
+            $("#uploadFiles").on("change", function () {
+                var fileInput = document.getElementById('uploadFiles');
+                //Iterating through each files selected in fileInput  
+                for (i = 0; i < fileInput.files.length; i++) {
+
+                    var sfilename = fileInput.files[i].name;
+                    let srandomid = Math.random().toString(36).substring(7);
+
+                    formData.append(sfilename, fileInput.files[i]);
+
+                    var markup = "<tr id='" + srandomid + "'><td>" + sfilename + "</td><td><a href='#' onclick='DeleteFile(\"" + srandomid + "\",\"" + sfilename +
+                        "\")'><span class='glyphicon glyphicon-remove red'></span></a></td></tr>"; // Binding the file name  
+                    $("#FilesList tbody").append(markup);
+
+                }
+                //chkatchtbl();
+                $('#uploadFiles').val('');
+            });
+
+        $("#errorMessage2").hide()
+            
+        //$("#uploadBtn").click(function () {
+            $('#uploadForm').on('submit', function (e) {
+                e.preventDefault();
+                formData.append('uploadername', "hello");
+                $("#userForm").hide()
+                $('#uploadBtn').prop('disabled', true)
+            $("#uploadBtn").html("Please wait...");
+
+            //var user = $("#userForm")
+                /*
+                var formData = new FormData();
+                //formData.append("userEmail", $("#userEmail").val());
+                formData.append("uploadFiles", $("#uploadFiles")[0]);
+                // formData = new FormData($(this)[0]);
+                var formData = new FormData($(this).parents('uploadForm')[0]);
+
+                var formData = new FormData();
+                var ins = document.getElementById('uploadFiles').files.length;
+                for (var x = 0; x < ins; x++) {
+                    formData.append("uploadFiles", document.getElementById('uploadFiles').files[x]);
+                } */
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Index", "Upload")',
+                    data: formData,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                async: true,
+                processData: false,
+                    cache: false,
+                    xhr: function () {
+                        var fileXhr = $.ajaxSettings.xhr();
+                        if (fileXhr.upload) {
+                            $("progress").show();
+                            fileXhr.upload.addEventListener("progress", function (e) {
+                                if (e.lengthComputable) {
+                                    $("#fileProgress").attr({
+                                        value: e.loaded,
+                                        max: e.total
+                                    });
+                                }
+                            }, false);
+                        }
+                        return fileXhr;
+                    },
+                    success: function (result) {
+                        if (result.status === 0) {
+                            $("#fileProgress").hide();
+                        $("#errMsg2").html("Upload failed. Please try again")
+                        $("#errorMessage2").show()
+                            $('#uploadBtn').prop('disabled', false)
+                        $("#uploadBtn").html("Upload");
+                    }
+                    else
+                    {
+                        $("#fileProgress").hide();
+                        //convert danger class to success
+                        $('.alert-danger').removeClass().addClass('alert-success');
+
+                        $("#errMsg2").html("File successfully uploaded and sent to your email address.")
+                        $("#userForm").hide()
+                        $("#uploadFiles").hide()
+                        $("#uploadBtn").hide()
+                        $('#uploadBtn').prop('disabled', false)
+                    }
+                },
+                error: function () {
+                    alert(error)
+                    $("#errMsg2").html("Upload failed. Please try again")
+                    $("#errorMessage2").show()
+                    $('#uploadBtn').prop('disabled', false)
+                    $("#uploadBtn").html("Upload");
+                    }
+                    
+            });
+
+            return false;
+
+        });
+    });
+    </script>*@
+
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,119 @@
+﻿@model MyDocuments.Models.UsersModel
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+
+@{
+    ViewData["Title"] = "All User Documents";
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">User Documents</h4>
+    </div>
+    <div class="card-body">
+
+
+        @if (ViewBag.Files == null)
+        {
+            <div class="col-md-12">
+                <div class="alert alert-danger" id="errMsg"> No Document Found! </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-md-12 table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th>File</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Remove</th>
+                        </tr>
+                        @foreach (var item in ViewBag.Files)
+                        {
+                            <tr>
+                                <td>
+                                    <a target="_blank" href="/Documents/@item.FileTitle">
+                                        @if (item.FileType == "jpeg" || item.FileType == "jpg" || item.FileType == "png" || item.FileType == "gif")
+                                        {
+                                            <img class="rounded service-img mr-1" src="/Documents/@item.FileTitle" alt="" />
+                                        }
+                                        else if (item.FileType == "pdf")
+                                        {
+                                            <i class="fas fa-file-pdf fa-2x text-danger text-center"></i>
+                                        }
+                                        else if (item.FileType == "csv")
+                                        {
+                                            <i class="fas fa-file-excel fa-2x text-info text-center"></i>
+                                        }
+                                        else if (item.FileType == "docx")
+                                        {
+                                            <i class="fas fa-file-word fa-2x text-info text-center"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-file-alt fa-2x text-primary text-center"></i>
+                                        }
+
+                                    </a>
+                                </td>
+                                <td>@item.FileTitle</td>
+                                <td>@item.FileType</td>
+                                <td>@item.CreatedDate.ToString("ddd, dd MMMM yyyy")</td>
+                                <td><button id="@item.Id" value="@item.Id" class="btn bg-white text-danger mr-2"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        }
+
+
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @foreach (var item in ViewBag.Files)
+    {
+<script type="text/javascript">
+            $('#@item.Id').on('click', function () {
+
+                var id = $("#@item.Id").val();
+
+
+                var clickedDelete = confirm("Do you want to delete document?")
+                if (clickedDelete) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/Documents/" + id + "/DeleteOneDocument",
+                        success: function (data) {
+                            if (data.response.status == 1) {
+                                alert(data.response.message)
+                                location.href = "/Documents/@item.UserId/ViewAllDocuments"
+                            } else {
+                                alert(data.response.message)
+                            }
+
+                        },
+
+                        error: function () {
+                            console.log("Something went wrong. Please try again")
+                        }
+
+                    });
+                }
+
+            });
+</script>
+    }
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

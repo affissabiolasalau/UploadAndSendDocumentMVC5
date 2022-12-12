@@ -1,0 +1,199 @@
+﻿@model MyDocuments.Models.UsersModel
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+
+@{
+    ViewData["Title"] = "Documents";
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Documents</h4>
+    </div>
+    <div class="card-body">
+
+
+        @if (ViewBag.Docs == null)
+        {
+            <div class="col-md-12">
+                <div class="alert alert-danger" id="errMsg"> No Document Found! </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-lg-12">
+                <form method="post" asp-controller="Documents" asp-action="Index">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><i class="fas fa-search"></i></span>
+                        </div>
+
+                        <input type="text" class="form-control" placeholder="Enter Email or Transaction ID" name="Search" id="Search" aria-describedby="basic-addon1">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+
+            <div class="col-md-12 table-responsive">
+                <table id="mainTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Files</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    @foreach (var item in ViewBag.Docs)
+                    {
+
+                        <tr>
+                            <td>@item.CreatedDate.ToString("ddd, dd MMMM yyyy")</td>
+                            <td>@item.TransactionId</td>
+                            <td>@item.Email</td>
+                            <td>@item.FileCount</td>
+                            <td>
+                                @if (item.FileCount == 0)
+                                {
+                                    <span class="text-danger">Failed</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Successful</span>
+                                }
+                            </td>
+                            <td>
+                                <a class="text-success mr-2" href="/Documents/@item.TransactionId/ViewDocument"><i class="fas fa-eye"></i></a>
+                                <button id="@item.TransactionId" value="@item.TransactionId" class="btn bg-white text-danger mr-2"><i class="fas fa-times"></i></button>
+                                <a class="text-info" href="/Documents/@item.UserId/ViewAllDocuments">View all</a>
+                            </td>
+
+                        </tr>
+
+                    }
+
+                </table>
+
+                @*<table id="newTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Files</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="newTableBody"></tbody>
+                </table>*@
+
+            </div>
+        }
+
+
+    </div>
+</div>
+
+
+
+@section Scripts {
+
+    @*<script>
+        $("#newTable").hide();
+        $("input").keyup(function () {
+            var search = $("#Search").val()
+            if (search.length == 0) $("#newTable").hide()
+            if (search.length > 0) $("#mainTable").hide()
+            else $("#mainTable").show()
+
+            if (search.length > 2)
+            {                
+                $.ajax({
+                    type: "GET",
+                    url: "/Documents/" + search + "/GetUserDocuments",
+                    success: function (data) {
+                        if (data != null) {
+                            console.log(JSON.stringify(data.docs))
+                           // var items = JSON.parse(JSON.stringify(data.docs));
+                            var items = data.docs;
+                            $.each(items, function (i, item) {
+                                if (items.hasOwnProperty(i)) {
+                                    alert(JSON.stringify(item.TransactionId))
+                                    var rows = null
+                                    rows = "<tr>"
+                                        + "<td>" + JSON.stringify(item.TransactionId) + "</td>"
+                                        + "<td>" + item.Email + "</td>"
+                                        + "<td>" + item.FileCount + "</td>"
+                                       + "<td>"
+                                        + "<a class='text-success mr-2' href='/Documents/" + item.TransactionId + "/ViewDocument'><i class='fas fa-eye'></i></a>"
+                                        + "<button id='" + item.TransactionId + "' value='" + item.TransactionId + "' class='btn bg-white text-danger mr-2'><i class='fas fa-times'></i></button>"
+                                        + "<a class='text-info' href='/Documents/" + item.UserId + "/ViewAllDocuments'>View all</a>"
+                                        + "</td>"
+
+                                        + "</tr>";
+                                    //$('#newTable tbody').append(rows);
+                                    $("#newTableBody").html(rows)
+                                }
+                            });
+                            $('#newTable').show();
+                        } else {
+                            
+                        }
+
+                    },
+
+                    error: function () {
+                        console.log("Something went wrong. Please try again")
+                    }
+
+
+                });
+            }
+
+        });
+    </script>*@
+
+    @foreach (var item in ViewBag.Docs)
+    {
+        <script type="text/javascript">
+            $('#@item.TransactionId').on('click', function () {
+
+                var id = $("#@item.TransactionId").val();
+
+
+                var clickedDelete = confirm("Do you want to delete document(s)?")
+                if (clickedDelete) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/Documents/" + id + "/DeleteDocumentRows",
+                        success: function (data) {
+                            if (data.response.status == 1) {
+                                alert(data.response.message)
+                                location.href = "/Documents"
+                            } else {
+                                alert(data.response.message)
+                            }
+
+                        },
+
+                        error: function () {
+                            console.log("Something went wrong. Please try again")
+                        }
+
+                    });
+                }
+
+            });
+        </script>
+    }
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

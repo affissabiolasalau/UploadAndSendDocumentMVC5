@@ -1,0 +1,60 @@
+﻿@model MyDocuments.Models.UsersModel
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+
+@{
+    ViewData["Title"] = "Upload Files";
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Upload Document <a href="/" class="btn btn-success"> Add New User</a> </h4>
+    </div>
+    <div class="card-body">
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data" asp-controller="Upload" asp-action="Index">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <select class="form-control" id="UserEmail" name="UserEmail">
+                            @*<option value="">Select Email</option>*@
+                            @Html.Raw(ViewBag.UsersEmail)
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <input type="file" class="form-control" id="uploadFiles" name="uploadFiles" accept="image/*,.pdf,.csv,.docx,.doc" multiple />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <button type="submit" class="btn-block btn btn-primary" id="uploadBtn"> Upload <i class="fa fa-file-upload"></i> </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        @if(ViewBag.Status == 0){
+        <div id="errorMessage" class="col-md-12">
+            <div class="alert alert-danger" id="errMsg"> @Html.Raw(ViewBag.Message) </div>
+        </div>
+        }
+
+        @if(ViewBag.Status == 1){
+        <div id="successMessage" class="col-md-12">
+            <div class="alert alert-success" id="errMsg"> @Html.Raw(ViewBag.Message) </div>
+        </div>
+        }
+
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
